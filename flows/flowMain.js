@@ -1,13 +1,12 @@
 const { addKeyword, EVENTS } = require('@bot-whatsapp/bot')
 
 // import flow
-const { flowHelp } = require('./menu/flowHelp')
-const { flowContact } = require('./menu/flowContact')
-const { flowGames } = require('./menu/flowGames')
+const flowHelp = require('./menu/flowHelp')
+const flowContact = require('./menu/flowContact')
+const flowGames = require('./menu/flowGames')
 
 // import state global
 const globalState = require('../state/globalState');
-
 
 const flowMain = addKeyword(EVENTS.WELCOME)
     .addAnswer('🙌 Hola bienvenido a este *Chatbot*')

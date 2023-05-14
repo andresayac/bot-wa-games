@@ -13,13 +13,13 @@ const flowHangmanPlay = addKeyword(['1', 'Jugar']).addAnswer(['Jugando'])
 
 const flowHangmanDifficulty = addKeyword(['2', 'Dificultad'])
     .addAnswer(
-        ['Listado de dificultades', ' *(1)* - Facil', ' *(2)* - Dificil', ' *(3)* - Volver a menú anterior.'],
+        ['Listado de dificultades', ' *(1)* - Facil', ' *(2)* - Dificil', ' *(0)* - Volver a menú anterior.'],
         { capture: true },
         async (ctx, { fallBack, flowDynamic, gotoFlow }) => {
             switch (ctx.body.toLowerCase().trim()) {
                 case '1': globalState.update(ctx.from, { HangmanDifficulty: 'easy' }); break;
                 case '2': globalState.update(ctx.from, { HangmanDifficulty: 'hard' }); break;
-                case '3': await gotoFlow(flowHangman); break;
+                case '0': await gotoFlow(flowHangman); break;
                 default:
                     await flowDynamic(['Opcion no valida, por favor seleccione una opcion valida.'])
                     await fallBack();
@@ -31,7 +31,39 @@ const flowHangmanDifficulty = addKeyword(['2', 'Dificultad'])
         }
     )
 
+
+
 const flowHangmanCategory = addKeyword(['3', 'Categoria'])
+    .addAnswer([
+        'Listado de categorias',
+        ' *(1)* - Animales',
+        ' *(2)* - Colores',
+        ' *(3)* - Frutas y Verduras',
+        ' *(4)* - Deportes',
+        ' *(5)* - Variadas',
+        ' *(0)* - *Volver a menú anterior.*',
+    ],
+        { capture: true },
+        async (ctx, { fallBack, flowDynamic, gotoFlow }) => {
+            switch (ctx.body.toLowerCase().trim()) {
+                case '1': globalState.update(ctx.from, { HangmanCategory: 'Animales' }); break;
+                case '2': globalState.update(ctx.from, { HangmanCategory: 'Colores' }); break;
+                case '3': globalState.update(ctx.from, { HangmanCategory: 'Frutas y Verduras' }); break;
+                case '4': globalState.update(ctx.from, { HangmanCategory: 'Deportes' }); break;
+                case '5': globalState.update(ctx.from, { HangmanCategory: 'Variadas' }); break;
+                case '0': await gotoFlow(flowHangman); break;
+                default:
+                    await flowDynamic(['Opcion no valida, por favor seleccione una opcion valida.'])
+                    await fallBack();
+                    return false;
+            }
+
+            await flowDynamic(['Usted ha Cambiado su categoria a: *' + globalState.get(ctx.from).HangmanCategory + '* con exito.'])
+            await gotoFlow(flowHangman);
+        }
+    )
+
+
 const flowHangmanRules = addKeyword(['4', 'Reglas'])
     .addAnswer([
         '➡️ *Reglas:*',
@@ -59,14 +91,21 @@ const flowHangman = addKeyword(['Hangman', '2', 'ahorcado'])
     .addAnswer(
         [
             'Ha selecionado Hangman (Ahorcado), te presento los siguientes comandos.',
-            ' *(1)* - *Jugar* para iniciar el juego',
+            ' *(1)* - *Jugar* Iniciar el juego',
             ' *(2)* - *Dificultad* Configura dificultad',
-            ' *(3)* - *Categoria*',
-            ' *(4)* - *Reglas* Consulta las reglas\n',
+            ' *(3)* - *Categoria* Ajusta una categoria',
+            ' *(4)* - *Reglas* Consulta las reglas',
+            ' *(0)* - *Menú* Regresa al menú anterior \n',
             '*Nota:* Por defecto la dificulta es *facil* y la categoria es *variada*.'
         ],
         { capture: true },
         async (ctx, { fallBack, flowDynamic, gotoFlow }) => {
+            if (['0', 'menu', 'menú'].includes(ctx.body.toLowerCase().trim())) {
+                const flowGames = require('../menu/flowGames');
+                await gotoFlow(flowGames);
+                return
+            }
+
             globalState.update(ctx.from, {
                 HangmanDifficulty: globalState.get(ctx.from).HangmanDifficulty ?? 'easy',
                 HangmanCategory: globalState.get(ctx.from).HangmanCategory ?? 'variada'
@@ -77,6 +116,4 @@ const flowHangman = addKeyword(['Hangman', '2', 'ahorcado'])
     )
 
 
-module.exports = {
-    flowHangman
-}
+module.exports = flowHangman

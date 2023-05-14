@@ -4,6 +4,4 @@ const flowHelp = addKeyword(['ayuda', '2'])
     .addAnswer('Ha selecionado Ayuda')
 
 
-module.exports = {
-    flowHelp
-}
+module.exports = flowHelp
