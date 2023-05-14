@@ -68,7 +68,7 @@ const flowHangmanPlay = addKeyword(['1', 'Jugar'])
 
             if (globalState.get(ctx.from).HangmanErrorList.includes(letter)) {
                 let wordUsed = globalState.get(ctx.from).HangmanErrorList.join(', ')
-                await flowDynamic([{ body: `Ya has digitado la letra *${letter}*, te comparto lista de palabras que no estan en la palabra: [*${wordUsed}*]`}]);
+                await flowDynamic([{ body: `Ya has digitado la letra *${letter}*, te comparto lista de palabras que no estan en la palabra: [*${wordUsed}*]` }]);
                 await fallBack();
                 return;
             }
@@ -98,9 +98,7 @@ const flowHangmanPlay = addKeyword(['1', 'Jugar'])
             let attempts = globalState.get(ctx.from)?.HangmanAttempts ?? 0;
 
             if (globalState.get(ctx.from).HangmanState === 'playing') {
-
-                // validate if the letter is in the word and check letter with accent
-                if (randomWord.includes(letter.normalize("NFD").replace(/[\u0300-\u036f]/g, ""))) {
+                if (randomWord.normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(letter.normalize("NFD").replace(/[\u0300-\u036f]/g, ""))) {
                     let newHiddenWord = ''
                     for (let i = 0; i < randomWord.length; i++) {
                         if (randomWord[i].normalize("NFD").replace(/[\u0300-\u036f]/g, "") === letter.normalize("NFD").replace(/[\u0300-\u036f]/g, "")) {
