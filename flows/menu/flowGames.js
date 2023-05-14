@@ -1,7 +1,7 @@
 const { addKeyword } = require('@bot-whatsapp/bot')
 
 const { flowAkinator } = require('../games/flowAkinator')
-const { flowHagman } = require('../games/flowHagman')
+const { flowHangman } = require('../games/flowHangman')
 
 const flowGames = addKeyword(['juegos', 'uno', '1'])
     .addAnswer([
@@ -11,7 +11,7 @@ const flowGames = addKeyword(['juegos', 'uno', '1'])
     ],
         null,
         null,
-        [flowAkinator, flowHagman]
+        [flowAkinator, flowHangman]
     )
 
 module.exports = {
