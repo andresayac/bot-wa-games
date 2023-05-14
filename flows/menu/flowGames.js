@@ -7,9 +7,10 @@ const flowGames = addKeyword(['juegos', 'uno', '1'])
     .addAnswer(
         [
             'Lista de Juegos:',
-            ' *(1)* - Akinator',
-            ' *(2)* - Hangman (Ahorcado)',
-            ' *(0)* - Volver al menu principal',
+            ' *(1)* - *Akinator*',
+            ' *(2)* - *Hangman* (Ahorcado)',
+            ' *(0)* - *Volver al menu principal*',
+            'Por favor seleccione una opcion:'
         ],
         { capture: true },
         async (ctx, { fallBack, flowDynamic, gotoFlow }) => {
