@@ -19,9 +19,9 @@ const main = async () => {
         database: adapterDB,
     })
 
-    QRPortalWeb(
-        process.env.PORTAL_PORT || 3000,
-    )
+    QRPortalWeb({
+        port: process.env.PORTAL_PORT || 3000
+    })
 }
 
 main()
