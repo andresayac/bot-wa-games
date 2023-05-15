@@ -6,10 +6,6 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 // import state global
 const globalState = require('../../state/globalState');
 
-
-const STATE_AKINATOR = []
-
-
 const flowAkinatorPlay = addKeyword(['1', 'Jugar'])
     .addAnswer(
         ['Iniciando Juego...'],
@@ -21,15 +17,13 @@ const flowAkinatorPlay = addKeyword(['1', 'Jugar'])
             console.log('language:', region);
 
             // Asegúrate de que existe un objeto en STATE_AKINATOR[ctx.from]
-            
-            if (!STATE_AKINATOR[ctx.from]) {
-                STATE_AKINATOR[ctx.from] = {};
-            }
 
             if (globalState.get(ctx.from).AkinatorCurrentStep === 0) {
                 try {
-                    STATE_AKINATOR[ctx.from].aki = new Aki({ region });
-                    await STATE_AKINATOR[ctx.from].aki.start();
+                    globalState.update(ctx.from,{
+                        AkinatorInstance: new Aki({ region })
+                    })                    
+                    await globalState.get(ctx.from).AkinatorInstance.start();
                 }
                 catch (e) {
                     console.log(e);
@@ -45,17 +39,17 @@ const flowAkinatorPlay = addKeyword(['1', 'Jugar'])
                 }
             ]);
 
-            console.log('question:', STATE_AKINATOR[ctx.from].aki.question);
-            console.log('answers:', STATE_AKINATOR[ctx.from].aki.answers);
+            console.log('question:', globalState.get(ctx.from).AkinatorInstance.question);
+            console.log('answers:', globalState.get(ctx.from).AkinatorInstance.answers);
 
-            const answers = STATE_AKINATOR[ctx.from].aki.answers.map((answer, index) => {
+            const answers = globalState.get(ctx.from).AkinatorInstance.answers.map((answer, index) => {
                 return `*(${index + 1})* - ${answer}`
             })
             console.log('answers:', answers);
 
             await flowDynamic([
-                STATE_AKINATOR[ctx.from].aki.question,
-                STATE_AKINATOR[ctx.from].aki.answers.map((answer, index) => {
+                globalState.get(ctx.from).AkinatorInstance.question,
+                globalState.get(ctx.from).AkinatorInstance.answers.map((answer, index) => {
                     return `*(${index + 1})* - ${answer}`
                 }).join('\n'),
             ])
@@ -66,8 +60,8 @@ const flowAkinatorPlay = addKeyword(['1', 'Jugar'])
         'Digite la respuesta: ',
         { capture: true },
         async (ctx, { fallBack, flowDynamic, gotoFlow, provider }) => {
-            console.log('question:', await STATE_AKINATOR[ctx.from].aki.question);
-            console.log('answers:', await STATE_AKINATOR[ctx.from].aki.answers);
+            console.log('question:', await globalState.get(ctx.from).AkinatorInstance.question);
+            console.log('answers:', await globalState.get(ctx.from).AkinatorInstance.answers);
 
             const userOtion = parseInt(ctx.body.toLowerCase().trim())
             const option = Number(userOtion);
@@ -78,39 +72,39 @@ const flowAkinatorPlay = addKeyword(['1', 'Jugar'])
                 return
             }
 
-            await STATE_AKINATOR[ctx.from].aki.step(option - 1);
+            await globalState.get(ctx.from).AkinatorInstance.step(option - 1);
 
-            console.log('progress:', STATE_AKINATOR[ctx.from].aki.progress);
-            console.log('currentStep:', STATE_AKINATOR[ctx.from].aki.currentStep);
+            console.log('progress:', globalState.get(ctx.from).AkinatorInstance.progress);
+            console.log('currentStep:', globalState.get(ctx.from).AkinatorInstance.currentStep);
 
-            if (STATE_AKINATOR[ctx.from].aki.progress >= 80 || STATE_AKINATOR[ctx.from].aki.currentStep >= 78) {
-                await STATE_AKINATOR[ctx.from].aki.win();
+            if (globalState.get(ctx.from).AkinatorInstance.progress >= 80 || globalState.get(ctx.from).AkinatorInstance.currentStep >= 78) {
+                await globalState.get(ctx.from).AkinatorInstance.win();
 
-                const winMessage = `¡Akinator ha adivinado tu personaje! \n*Nombre*: ${STATE_AKINATOR[ctx.from].aki.answers[0].name} \n*Descripción*: ${STATE_AKINATOR[ctx.from].aki.answers[0].description} \n*Intento`
+                const winMessage = `¡Akinator ha adivinado tu personaje! \n*Nombre*: ${globalState.get(ctx.from).AkinatorInstance.answers[0].name} \n*Descripción*: ${globalState.get(ctx.from).AkinatorInstance.answers[0].description} \n*Intento*: ${globalState.get(ctx.from).AkinatorInstance.currentStep}`
 
                 await flowDynamic([
                     {
-                        media: STATE_AKINATOR[ctx.from].aki.answers[0].absolute_picture_path,
+                        media: globalState.get(ctx.from).AkinatorInstance.answers[0].absolute_picture_path,
                         body: winMessage
                     }
                 ]);
 
                 console.log('¡Akinator ha adivinado tu personaje!');
-                console.log('firstGuess:', STATE_AKINATOR[ctx.from].aki.answers);
-                console.log('guessCount:', STATE_AKINATOR[ctx.from].aki.guessCount);
+                console.log('firstGuess:', globalState.get(ctx.from).AkinatorInstance.answers);
+                console.log('guessCount:', globalState.get(ctx.from).AkinatorInstance.guessCount);
 
             } else {
-                console.log('question:', STATE_AKINATOR[ctx.from].aki.question);
-                console.log('answers:', STATE_AKINATOR[ctx.from].aki.answers);
+                console.log('question:', globalState.get(ctx.from).AkinatorInstance.question);
+                console.log('answers:', globalState.get(ctx.from).AkinatorInstance.answers);
 
-                const answers = STATE_AKINATOR[ctx.from].aki.answers.map((answer, index) => {
+                const answers = globalState.get(ctx.from).AkinatorInstance.answers.map((answer, index) => {
                     return `*(${index + 1})* - ${answer}`
                 })
                 console.log('answers:', answers);
 
                 await flowDynamic([
-                    STATE_AKINATOR[ctx.from].aki.question,
-                    STATE_AKINATOR[ctx.from].aki.answers.map((answer, index) => {
+                    globalState.get(ctx.from).AkinatorInstance.question,
+                    globalState.get(ctx.from).AkinatorInstance.answers.map((answer, index) => {
                         return `*(${index + 1})* - ${answer}`
                     }).join('\n'),
                 ])
