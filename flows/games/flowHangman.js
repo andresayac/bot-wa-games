@@ -218,12 +218,14 @@ const flowHangmanRules = addKeyword(['4', 'Reglas'])
 const flowHangman = addKeyword(['Hangman', '2', 'ahorcado'])
     .addAnswer(
         [
-            'Ha selecionado Hangman (Ahorcado), te presento los siguientes comandos.',
-            ' *(1)* - *Jugar* Iniciar el juego',
-            ' *(2)* - *Dificultad* Configura dificultad',
-            ' *(3)* - *Categoria* Ajusta una categoria',
-            ' *(4)* - *Reglas* Consulta las reglas',
-            ' *(5)* - *Configuración* Consulta tu configuracion actual ',
+            'Ha selecionado *Hangman* (*Ahorcado*)', 
+            '_Hangman (Ahorcado) es un juego clásico de adivinanzas en el que debes adivinar una palabra oculta mediante la correcta elección de letras. Tienes un número limitado de intentos y cada vez que te equivocas, se dibuja una parte del ahorcado. El objetivo es adivinar la palabra antes de que se complete el dibujo del ahorcado._',
+            'te presento los siguientes comandos.',
+            ' *(1)* - *Jugar* Iniciar el juego.',
+            ' *(2)* - *Dificultad* Configura dificultad.',
+            ' *(3)* - *Categoria* Ajusta una categoria.',
+            ' *(4)* - *Reglas* Consulta las reglas.',
+            ' *(5)* - *Configuración* Consulta tu configuracion actual.',
             ' *(0)* - *Regresa al menú anterior* \n',
             'Por favor seleccione una opcion:\n',
             '*Nota:* Por defecto la dificulta es *facil* y la categoria es *Combinada*.'
