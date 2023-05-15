@@ -19,7 +19,7 @@ const flowMain = addKeyword(EVENTS.WELCOME)
         ],
         { capture: true },
         (ctx) => {
-            globalState.set(ctx.from, { name: ctx.pushName ?? ctx.from })
+            globalState.update(ctx.from, { name: ctx.pushName ?? ctx.from })
         },
         [flowGames, flowHelp, flowContact]
     )
