@@ -3,3 +3,4 @@ node_modules
 bot_sessions
 bot.qr.png
 db.json
+state.json
