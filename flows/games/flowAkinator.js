@@ -93,6 +93,9 @@ const flowAkinatorPlay = addKeyword(['1', 'Jugar'])
                 console.log('firstGuess:', globalState.get(ctx.from).AkinatorInstance.answers);
                 console.log('guessCount:', globalState.get(ctx.from).AkinatorInstance.guessCount);
 
+                await gotoFlow(flowAkinator)
+                return
+
             } else {
                 console.log('question:', globalState.get(ctx.from).AkinatorInstance.question);
                 console.log('answers:', globalState.get(ctx.from).AkinatorInstance.answers);
