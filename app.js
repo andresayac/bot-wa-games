@@ -4,6 +4,8 @@ const QRPortalWeb = require('@bot-whatsapp/portal')
 const BaileysProvider = require('@bot-whatsapp/provider/baileys')
 const JsonFileAdapter = require('@bot-whatsapp/database/json')
 
+require('dotenv').config()
+
 const flowMain = require('./flows/flowMain')
 
 const main = async () => {
@@ -17,7 +19,9 @@ const main = async () => {
         database: adapterDB,
     })
 
-    QRPortalWeb()
+    QRPortalWeb(
+        process.env.PORTAL_PORT || 3000,
+    )
 }
 
 main()
