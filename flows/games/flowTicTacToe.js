@@ -3,19 +3,20 @@ const { addKeyword } = require('@bot-whatsapp/bot')
 // import global state
 const globalState = require('../../state/globalState');
 
-
 const printBoard = async (board) => {
+    let numberEmojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣'];
     let output = '';
     for (let i = 0; i < 9; i++) {
-        if (board[i] == 0) output += i + 1;
-        else if (board[i] == 1) output += 'X';
-        else output += 'O';
+        if (board[i] == 0) output += numberEmojis[i];
+        else if (board[i] == 1) output += '✖️';
+        else output += '⭕';
 
-        if (i % 3 < 2) output += ' | ';
+        if (i % 3 < 2) output += '|';
         else if (i < 8) output += '\n---------\n';
     }
     return output;
 }
+
 
 const makeMove = (board, pos, player) => {
     if (board[pos] == 0) {
