@@ -168,7 +168,8 @@ const flowTicTacToeRules = addKeyword(['2', 'Reglas'])
         '▪️ - Los jugadores se turnan para colocar su símbolo en un espacio vacío en el tablero.',
         '▪️ - El primer jugador en obtener tres de sus símbolos en una fila, ya sea horizontal, vertical o diagonalmente, gana el juego.',
         '▪️ - Si el tablero se llena y ningún jugador ha ganado, el juego es un empate.',
-        'Para volver al menu anterior escriba *volver*'
+        'Para volver al menu anterior escriba *volver*',     
+        '*Nota:* Por defecto la dificulta es *facil* '
     ],
         { capture: false },
         async (ctx, { gotoFlow }) => {
