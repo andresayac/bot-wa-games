@@ -124,7 +124,8 @@ const flowTicTacToePlay = addKeyword(['1', 'Jugar'])
 
         if (makeMove(board, parseInt(move) - 1, 1)) {
             if (checkWin(board, 1)) {
-                await flowDynamic(['You won!']);
+                await flowDynamic(['¡Ganaste!']);
+                gotoFlow(flowTicTacToe)
             } else if (getEmptySpaces(board).length == 0) {
                 await flowDynamic(['¡Es un empate!']);
                 gotoFlow(flowTicTacToe)
