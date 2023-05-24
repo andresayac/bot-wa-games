@@ -43,7 +43,7 @@ const checkWin = (board, player) => {
     return false;
 }
 
-const minimax = (board, depth, isMaximizing, alpha, beta) => {
+const minimax = (board, depth, isMaximizing, alpha, beta, difficulty = 0.90) => {
     if (checkWin(board, 2)) return { score: 1 };
     else if (checkWin(board, 1)) return { score: -1 };
     else if (getEmptySpaces(board).length == 0) return { score: 0 };
@@ -51,11 +51,13 @@ const minimax = (board, depth, isMaximizing, alpha, beta) => {
     if (isMaximizing) {
         let bestScore = -Infinity;
         let move;
+        let possibleMoves = [];
         for (let i = 0; i < 9; i++) {
             if (board[i] == 0) {
                 board[i] = 2;
-                let result = minimax(board, depth + 1, false, alpha, beta);
+                let result = minimax(board, depth + 1, false, alpha, beta, difficulty);
                 board[i] = 0;
+                possibleMoves.push({ score: result.score, move: i });
                 if (result.score > bestScore) {
                     bestScore = result.score;
                     move = i;
@@ -66,14 +68,20 @@ const minimax = (board, depth, isMaximizing, alpha, beta) => {
                 }
             }
         }
-        return { score: bestScore, move: move };
+        let shouldMakeOptimalMove = Math.random() < difficulty;
+        if (shouldMakeOptimalMove) {
+            return { score: bestScore, move: move };
+        } else {
+            let randomMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+            return { score: randomMove.score, move: randomMove.move };
+        }
     } else {
         let bestScore = Infinity;
         let move;
         for (let i = 0; i < 9; i++) {
             if (board[i] == 0) {
                 board[i] = 1;
-                let result = minimax(board, depth + 1, true, alpha, beta);
+                let result = minimax(board, depth + 1, true, alpha, beta, difficulty);
                 board[i] = 0;
                 if (result.score < bestScore) {
                     bestScore = result.score;
@@ -94,9 +102,16 @@ const flowTicTacToePlay = addKeyword(['1', 'Jugar'])
     .addAnswer(['Starting game...'], { capture: false }, async (ctx, { fallBack, flowDynamic, gotoFlow }) => {
         let board = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 
-        await flowDynamic([{
-            body: await printBoard(board)
-        }]);
+
+        let TicTacToeDifficulty = globalState.get(ctx.from).TicTacToeDifficulty;
+
+        await flowDynamic([
+            {
+                body: 'Dificultad: *' + TicTacToeDifficulty + '*'
+            }, {
+                body: await printBoard(board)
+            }
+        ]);
 
         globalState.update(ctx.from, {
             TicTacToeBoard: board,
@@ -115,7 +130,10 @@ const flowTicTacToePlay = addKeyword(['1', 'Jugar'])
                 gotoFlow(flowTicTacToe)
             } else {
                 // Robot's turn
-                let result = minimax(board, 0, true, -Infinity, Infinity);
+                let TicTacToeDifficulty = globalState.get(ctx.from).TicTacToeDifficulty;
+                let difficulty = TicTacToeDifficulty == 'facil' ? 0.90 : 1;
+
+                let result = minimax(board, 0, true, -Infinity, Infinity, difficulty);
                 makeMove(board, result.move, 2);
                 if (checkWin(board, 2)) {
                     await flowDynamic(['¡El robot ganó!']);
@@ -158,6 +176,27 @@ const flowTicTacToeRules = addKeyword(['2', 'Reglas'])
         }
     );
 
+const flowTicTacToeDifficulty = addKeyword(['3', 'Dificultad'])
+    .addAnswer(
+        ['Listado de dificultades', ' *(1)* - Facil', ' *(2)* - Dificil', ' *(0)* - Volver a menú anterior.'],
+        { capture: true },
+        async (ctx, { fallBack, flowDynamic, gotoFlow }) => {
+            switch (ctx.body.toLowerCase().trim()) {
+                case '1': globalState.update(ctx.from, { TicTacToeDifficulty: 'facil' }); break;
+                case '2': globalState.update(ctx.from, { TicTacToeDifficulty: 'difícil' }); break;
+                case '0': await gotoFlow(flowTicTacToe); break;
+                default:
+                    await flowDynamic(['Opcion no valida, por favor seleccione una opcion valida.'])
+                    await fallBack();
+                    return false;
+            }
+
+            await flowDynamic(['Usted ha Cambiado su dificultad a: *' + globalState.get(ctx.from).TicTacToeDifficulty + '* con exito.'])
+            await gotoFlow(flowTicTacToe);
+        }
+    )
+
+
 const flowTicTacToe = addKeyword(['TicTacToe', '3'])
     .addAnswer(
         [
@@ -166,11 +205,17 @@ const flowTicTacToe = addKeyword(['TicTacToe', '3'])
             'te presento los siguientes comandos.',
             ' *(1)* - *Jugar* Iniciar el juego.',
             ' *(2)* - *Reglas* Consulta las reglas.',
+            ' *(3)* - *Dificultad* Configura dificultad',
             ' *(0)* - *Regresa al menú anterior* \n',
             'Por favor seleccione una opcion:\n'
         ],
         { capture: true },
         async (ctx, { fallBack, flowDynamic, gotoFlow }) => {
+
+            globalState.update(ctx.from, {
+                TicTacToeDifficulty: globalState.get(ctx.from).TicTacToeDifficulty ?? 'facil'
+            })
+
 
             if (['0', 'menu', 'menú'].includes(ctx.body.toLowerCase().trim())) {
                 const flowGames = require('../menu/flowGames');
@@ -180,7 +225,7 @@ const flowTicTacToe = addKeyword(['TicTacToe', '3'])
 
 
         },
-        [flowTicTacToePlay, flowTicTacToeRules]
+        [flowTicTacToePlay, flowTicTacToeRules, flowTicTacToeDifficulty]
     )
 
 module.exports = flowTicTacToe
