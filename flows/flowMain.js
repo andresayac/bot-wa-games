@@ -18,8 +18,14 @@ const flowMain = addKeyword(EVENTS.WELCOME)
             '👉 *(3)* *Contacto* Contacta al desarrollador',
         ],
         { capture: true },
-        (ctx) => {
+        async (ctx, { fallBack, flowDynamic, gotoFlow }) => {
             globalState.update(ctx.from, { name: ctx.pushName ?? ctx.from })
+
+            if (![1, 2, 3].includes(parseInt(ctx.body.toLowerCase().trim()))) {
+                await flowDynamic(['Opcion no valida, por favor seleccione una opcion valida.'])
+                await fallBack()
+                return
+            }
         },
         [flowGames, flowHelp, flowContact]
     )
