@@ -206,8 +206,8 @@ const flowTicTacToeDifficulty = addKeyword(['3', 'Dificultad'])
             switch (ctx.body.toLowerCase().trim()) {
                 case '1': globalState.update(ctx.from, { TicTacToeDifficulty: 'Facil' }); break;
                 case '2': globalState.update(ctx.from, { TicTacToeDifficulty: 'Medio' }); break;
-                case '2': globalState.update(ctx.from, { TicTacToeDifficulty: 'Difícil' }); break;
-                case '2': globalState.update(ctx.from, { TicTacToeDifficulty: 'Imposible' }); break;
+                case '3': globalState.update(ctx.from, { TicTacToeDifficulty: 'Difícil' }); break;
+                case '4': globalState.update(ctx.from, { TicTacToeDifficulty: 'Imposible' }); break;
                 case '0': await gotoFlow(flowTicTacToe); break;
                 default:
                     await flowDynamic(['Opcion no valida, por favor seleccione una opcion valida.'])
