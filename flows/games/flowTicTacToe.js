@@ -10,16 +10,16 @@ const difficultyLevels = {
     "Imposible": [1, 1]
 }
 
-const printBoard = async (board) => {
+const printBoard = async (board, machine = '⭕', human = '✖️') => {
     let numberEmojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣'];
     let output = '';
     for (let i = 0; i < 9; i++) {
         if (board[i] == 0) output += numberEmojis[i];
-        else if (board[i] == 1) output += '✖️';
-        else output += '⭕';
+        else if (board[i] == 1) output += human;
+        else output += machine;
 
         if (i % 3 < 2) output += '|';
-        else if (i < 8) output += '\n---------\n';
+        else if (i < 8) output += '\n------------\n';
     }
     return output;
 }
@@ -27,7 +27,7 @@ const printBoard = async (board) => {
 const selectDifficulty = (difficultyLevel) => {
     let range = difficultyLevels[difficultyLevel];
 
-    if (!range) throw new Error(`Nivel de dificultad desconocido: ${difficultyLevel}`);
+    if (!range) return 0.5;
 
     return range[0] === range[1] ? range[0] : Math.random() * (range[1] - range[0]) + range[0];
 }
@@ -113,18 +113,33 @@ const minimax = (board, depth, isMaximizing, alpha, beta, difficulty = 0.90) => 
 
 
 const flowTicTacToePlay = addKeyword(['1', 'Jugar'])
-    .addAnswer(['Starting game...'], { capture: false }, async (ctx, { fallBack, flowDynamic, gotoFlow }) => {
+    .addAnswer(['Iniciando Juego...'], { capture: false }, async (ctx, { fallBack, flowDynamic, gotoFlow }) => {
         let board = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 
-
         let TicTacToeDifficulty = globalState.get(ctx.from).TicTacToeDifficulty;
+        let TicTacToePlayerHuman = globalState.get(ctx.from).TicTacToePlayerHuman;
+        let TicTacToePlayerMachine = globalState.get(ctx.from).TicTacToePlayerMachine;
+
+        let message = 'Dificultad: *' + TicTacToeDifficulty + '*\n';
+        message += 'Usted es: *' + TicTacToePlayerHuman + '*\n';
+
+        if (TicTacToePlayerHuman === '⭕') {
+            await flowDynamic(['El robot está pensando...']);
+            let result = minimax(board, 0, true, -Infinity, Infinity);
+            makeMove(board, result.move, 2);
+        }
+
+        if (TicTacToePlayerHuman === '✖️') {
+            machine = '⭕';
+            human = '✖️';
+        } else {
+            machine = '✖️';
+            human = '⭕';
+        }
 
         await flowDynamic([
-            {
-                body: 'Dificultad: *' + TicTacToeDifficulty + '*'
-            }, {
-                body: await printBoard(board)
-            }
+            { body: message },
+            { body: await printBoard(board, TicTacToePlayerMachine, TicTacToePlayerHuman) }
         ]);
 
         globalState.update(ctx.from, {
@@ -136,15 +151,20 @@ const flowTicTacToePlay = addKeyword(['1', 'Jugar'])
         let board = globalState.get(ctx.from).TicTacToeBoard;
         let move = ctx.body.toLowerCase().trim();
 
+        let TicTacToePlayerHuman = globalState.get(ctx.from).TicTacToePlayerHuman;
+        let TicTacToePlayerMachine = globalState.get(ctx.from).TicTacToePlayerMachine;
+
         if (makeMove(board, parseInt(move) - 1, 1)) {
             if (checkWin(board, 1)) {
                 await flowDynamic(['¡Ganaste!']);
+                await flowDynamic([{
+                    body: await printBoard(board, TicTacToePlayerMachine, TicTacToePlayerHuman)
+                }]);
                 gotoFlow(flowTicTacToe)
             } else if (getEmptySpaces(board).length == 0) {
                 await flowDynamic(['¡Es un empate!']);
                 gotoFlow(flowTicTacToe)
             } else {
-                // Robot's turn
                 let TicTacToeDifficulty = globalState.get(ctx.from).TicTacToeDifficulty;
                 let difficulty = selectDifficulty(TicTacToeDifficulty)
 
@@ -152,6 +172,9 @@ const flowTicTacToePlay = addKeyword(['1', 'Jugar'])
                 makeMove(board, result.move, 2);
                 if (checkWin(board, 2)) {
                     await flowDynamic(['¡El robot ganó!']);
+                    await flowDynamic([{
+                        body: await printBoard(board, TicTacToePlayerMachine, TicTacToePlayerHuman)
+                    }]);
                     gotoFlow(flowTicTacToe)
                 } else if (getEmptySpaces(board).length == 0) {
                     await flowDynamic(['¡Es un empate!']);
@@ -159,7 +182,7 @@ const flowTicTacToePlay = addKeyword(['1', 'Jugar'])
                 } else {
                     console.log('TicTacToe board:')
                     await flowDynamic([{
-                        body: await printBoard(board)
+                        body: await printBoard(board, TicTacToePlayerMachine, TicTacToePlayerHuman)
                     }]);
                     await fallBack();
                 }
@@ -220,6 +243,32 @@ const flowTicTacToeDifficulty = addKeyword(['3', 'Dificultad'])
         }
     )
 
+const flowTicTacToePlayer = addKeyword(['4', 'Cambiar'])
+    .addAnswer(
+        [
+            'Elige tu ficha:',
+            ' *(1)* - ✖️',
+            ' *(2)* - ⭕',
+            ' *(0)* - Volver a menú anterior.',
+            '*Nota:* Por defecto eres ✖️ y el robot es ⭕, si selecionas ⭕ iras de segundo turno'
+        ],
+        { capture: true },
+        async (ctx, { fallBack, flowDynamic, gotoFlow }) => {
+            switch (ctx.body.toLowerCase().trim()) {
+                case '1': globalState.update(ctx.from, { TicTacToePlayerHuman: '✖️', TicTacToePlayerMachine: '⭕' }); break;
+                case '2': globalState.update(ctx.from, { TicTacToePlayerHuman: '⭕', TicTacToePlayerMachine: '✖️' }); break;
+                case '0': await gotoFlow(flowTicTacToe); break;
+                default:
+                    await flowDynamic(['Opcion no valida, por favor seleccione una opcion valida.'])
+                    await fallBack();
+                    return false;
+            }
+
+            await flowDynamic(['Usted ha Cambiado su a: *' + globalState.get(ctx.from).TicTacToePlayerHuman + '* con exito.'])
+            await gotoFlow(flowTicTacToe);
+        }
+    )
+
 
 const flowTicTacToe = addKeyword(['TicTacToe', '3'])
     .addAnswer(
@@ -230,15 +279,18 @@ const flowTicTacToe = addKeyword(['TicTacToe', '3'])
             ' *(1)* - *Jugar* Iniciar el juego.',
             ' *(2)* - *Reglas* Consulta las reglas.',
             ' *(3)* - *Dificultad* Configura dificultad',
+            ' *(4)* - *Cambiar* Elegie la ficha ✖️ o ⭕',
             ' *(0)* - *Regresa al menú anterior* \n',
             'Por favor seleccione una opcion:\n',
-            '*Nota:* Por defecto la dificulta es *facil* '
+            '*Nota:* Por defecto la dificulta es *facil* y eres ✖️ iras de primer turno.'
         ],
         { capture: true },
         async (ctx, { fallBack, flowDynamic, gotoFlow }) => {
 
             globalState.update(ctx.from, {
-                TicTacToeDifficulty: globalState.get(ctx.from).TicTacToeDifficulty ?? 'facil'
+                TicTacToeDifficulty: globalState.get(ctx.from).TicTacToeDifficulty ?? 'facil',
+                TicTacToePlayerHuman: globalState.get(ctx.from).TicTacToePlayerHuman ?? '✖️',
+                TicTacToePlayerMachine: globalState.get(ctx.from).TicTacToePlayerMachine ?? '⭕',
             })
 
 
@@ -250,7 +302,7 @@ const flowTicTacToe = addKeyword(['TicTacToe', '3'])
 
 
         },
-        [flowTicTacToePlay, flowTicTacToeRules, flowTicTacToeDifficulty]
+        [flowTicTacToePlay, flowTicTacToeRules, flowTicTacToeDifficulty, flowTicTacToePlayer]
     )
 
 module.exports = flowTicTacToe
