@@ -7,9 +7,9 @@ const flowContact = addKeyword(['contacto', '3'])
         { capture: false },
         async (ctx, { fallBack, flowDynamic, gotoFlow }) => {
             await flowDynamic([
-                '👉 *Nombre:* *Andres Aya*',
-                '👉 *Email: *andresayac@gmail.com *',
-                '👉 *GitHub: https://github.com/andresayac',
+                '👉 *Nombre:* Andres Aya',
+                '👉 *Email:* andresayac@gmail.com ',
+                '👉 *GitHub:* https://github.com/andresayac',
             ])
             const flowMain = require('../flowMain')
             await gotoFlow(flowMain)
