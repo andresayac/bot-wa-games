@@ -3,6 +3,13 @@ const { addKeyword } = require('@bot-whatsapp/bot')
 // import global state
 const globalState = require('../../state/globalState');
 
+const difficultyLevels = {
+    "Facil": [0.50, 0.70],
+    "Medio": [0.70, 0.90],
+    "Difícil": [0.90, 0.99],
+    "Imposible": [1, 1]
+}
+
 const printBoard = async (board) => {
     let numberEmojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣'];
     let output = '';
@@ -17,6 +24,13 @@ const printBoard = async (board) => {
     return output;
 }
 
+const selectDifficulty = (difficultyLevel) => {
+    let range = difficultyLevels[difficultyLevel];
+
+    if (!range) throw new Error(`Nivel de dificultad desconocido: ${difficultyLevel}`);
+
+    return range[0] === range[1] ? range[0] : Math.random() * (range[1] - range[0]) + range[0];
+}
 
 const makeMove = (board, pos, player) => {
     if (board[pos] == 0) {
@@ -132,7 +146,7 @@ const flowTicTacToePlay = addKeyword(['1', 'Jugar'])
             } else {
                 // Robot's turn
                 let TicTacToeDifficulty = globalState.get(ctx.from).TicTacToeDifficulty;
-                let difficulty = TicTacToeDifficulty == 'facil' ? 0.90 : 1;
+                let difficulty = selectDifficulty(TicTacToeDifficulty)
 
                 let result = minimax(board, 0, true, -Infinity, Infinity, difficulty);
                 makeMove(board, result.move, 2);
@@ -179,12 +193,21 @@ const flowTicTacToeRules = addKeyword(['2', 'Reglas'])
 
 const flowTicTacToeDifficulty = addKeyword(['3', 'Dificultad'])
     .addAnswer(
-        ['Listado de dificultades', ' *(1)* - Facil', ' *(2)* - Dificil', ' *(0)* - Volver a menú anterior.'],
+        [
+            'Listado de dificultades',
+            ' *(1)* - Facil',
+            ' *(2)* - Medio',
+            ' *(3)* - Difícil',
+            ' *(4)* - Imposible',
+            ' *(0)* - Volver a menú anterior.'
+        ],
         { capture: true },
         async (ctx, { fallBack, flowDynamic, gotoFlow }) => {
             switch (ctx.body.toLowerCase().trim()) {
-                case '1': globalState.update(ctx.from, { TicTacToeDifficulty: 'facil' }); break;
-                case '2': globalState.update(ctx.from, { TicTacToeDifficulty: 'difícil' }); break;
+                case '1': globalState.update(ctx.from, { TicTacToeDifficulty: 'Facil' }); break;
+                case '2': globalState.update(ctx.from, { TicTacToeDifficulty: 'Medio' }); break;
+                case '2': globalState.update(ctx.from, { TicTacToeDifficulty: 'Difícil' }); break;
+                case '2': globalState.update(ctx.from, { TicTacToeDifficulty: 'Imposible' }); break;
                 case '0': await gotoFlow(flowTicTacToe); break;
                 default:
                     await flowDynamic(['Opcion no valida, por favor seleccione una opcion valida.'])
