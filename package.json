@@ -9,16 +9,16 @@
     },
     "keywords": [],
     "dependencies": {
-        "@adiwajshing/baileys": "github:WhiskeySockets/Baileys",
-        "@adiwajshing/keyed-db": "^0.2.4",
-        "@bot-whatsapp/bot": "latest",
-        "@bot-whatsapp/cli": "latest",
-        "@bot-whatsapp/database": "latest",
-        "@bot-whatsapp/portal": "latest",
-        "@bot-whatsapp/provider": "latest",        
+        "@bot-whatsapp/bot": "^0.1.30",
+        "@bot-whatsapp/cli": "^0.1.30",
+        "@bot-whatsapp/portal": "^0.1.30",
+        "@bot-whatsapp/database": "^0.1.30",
+        "@bot-whatsapp/provider": "^0.1.30",
+        "@whiskeysockets/baileys": "^6.4.0",
         "aki-api-v2": "^6.0.9",
         "mime-types": "2.1.35",
-        "wa-sticker-formatter": "4.3.2"
+        "wa-sticker-formatter": "4.4.4",     
+        "dotenv-safe": "^8.2.0"
     },
     "author": "",
     "license": "ISC"
