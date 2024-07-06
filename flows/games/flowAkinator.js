@@ -1,5 +1,5 @@
 const { addKeyword } = require('@bot-whatsapp/bot')
-const { Aki } = require('aki-api-v2');
+const { Aki } = require('aki-api');
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
@@ -8,10 +8,7 @@ const globalState = require('../../state/globalState');
 
 
 const regionName = {
-    'es_animals': 'Español - Animales',
     'es': 'Español - Personas',
-    'en_animals': 'Ingles  - Animales',
-    'en_objects': 'Ingles  - Objetos',
     'en': 'Ingles  - Personas'
 }
 
@@ -38,7 +35,7 @@ const flowAkinatorPlay = addKeyword(['1', 'Jugar'])
             }
             await flowDynamic([
                 {
-                    media: 'https://es.akinator.com/bundles/elokencesite/images/akinator.png',
+                    media: 'https://es.akinator.com/assets/img/akinator.png',
                     body: "Hola, soy *Akinator* \nPiense en un personaje real o ficticio.Voy a intentar adivinar quién es"
                 }
             ]);
@@ -71,60 +68,41 @@ const flowAkinatorPlay = addKeyword(['1', 'Jugar'])
                 await gotoFlow(flowAkinator)
             });
 
-            if (globalState.get(ctx.from).AkinatorInstance.progress >= 80 || globalState.get(ctx.from).AkinatorInstance.currentStep >= 80) {
-                await globalState.get(ctx.from).AkinatorInstance.win().catch(async (error) => {
-                    if (globalState.get(ctx.from).AkinatorInstance.currentStep < 80) {
-                        await globalState.get(ctx.from).AkinatorInstance.step(option);
-                    } else {
-                        await flowDynamic('❌*Se ha producido un error de Akinator.*')
-                        await gotoFlow(flowAkinator)
-                    }
-                });
-                ;
-
-                const winMessage = `¡Akinator ha adivinado tu personaje!\n*Nombre*: ${globalState.get(ctx.from).AkinatorInstance.answers[0].name}\n*Descripción*: ${globalState.get(ctx.from).AkinatorInstance.answers[0].description}\n*Intento*: ${globalState.get(ctx.from).AkinatorInstance.currentStep}`
+            if(globalState.get(ctx.from).AkinatorInstance.guess) {
+                const winMessage = `¡Akinator ha adivinado tu personaje!\n*Nombre*: ${globalState.get(ctx.from).AkinatorInstance.guess.name_proposition}\n*Descripción*: ${globalState.get(ctx.from).AkinatorInstance.guess.description_proposition}\n*Intento*: ${globalState.get(ctx.from).AkinatorInstance.currentStep}`
 
                 await flowDynamic([
                     {
-                        media: globalState.get(ctx.from).AkinatorInstance.answers[0].absolute_picture_path,
+                        media: globalState.get(ctx.from).AkinatorInstance.guess.photo,
                         body: winMessage
                     }
-                ]);
-
+                ])
                 await gotoFlow(flowAkinator)
                 return
-
-            } else {
-                await flowDynamic([
-                    globalState.get(ctx.from).AkinatorInstance.question,
-                    globalState.get(ctx.from).AkinatorInstance.answers.map((answer, index) => {
-                        return `*(${index + 1})* - ${answer}`
-                    }).join('\n'),
-                ])
-
-                await fallBack()
             }
+
+            await flowDynamic([
+                globalState.get(ctx.from).AkinatorInstance.question,
+                globalState.get(ctx.from).AkinatorInstance.answers.map((answer, index) => {
+                    return `*(${index + 1})* - ${answer}`
+                }).join('\n'),
+            ])
+
+            await fallBack()
         })
 
 const flowAkinatornLanguaje = addKeyword(['2', 'Idioma'])
     .addAnswer(
         [
             'Listado de idiomas y categorias',
-            
-            ' *(1)* - Español - Animales',
-            ' *(2)* - Español - Personas',            
-            ' *(3)* - Ingles  - Animales',            
-            ' *(4)* - Ingles  - Objetos',
-            ' *(5)* - Ingles  - Personas',
-            ' *(0)* - Volver a menú anterior.'],
+            ' *(1)* - Español',        
+            ' *(2)* - Ingles',
+            ' *(3)* - Volver a menú anterior.'],
         { capture: true },
         async (ctx, { fallBack, flowDynamic, gotoFlow }) => {
             switch (ctx.body.toLowerCase().trim()) {
-                case '1': globalState.update(ctx.from, { AkinatorLanguage: 'es_animals' }); break;
-                case '2': globalState.update(ctx.from, { AkinatorLanguage: 'es' }); break;
-                case '3': globalState.update(ctx.from, { AkinatorLanguage: 'en_animals' }); break;
-                case '4': globalState.update(ctx.from, { AkinatorLanguage: 'en_objects' }); break;
-                case '5': globalState.update(ctx.from, { AkinatorLanguage: 'en' }); break;
+                case '1': globalState.update(ctx.from, { AkinatorLanguage: 'es' }); break;                
+                case '2': globalState.update(ctx.from, { AkinatorLanguage: 'en' }); break;
                 case '0': await gotoFlow(flowAkinator); break;
                 default:
                     await flowDynamic(['Opcion no valida, por favor seleccione una opcion valida.'])
